@@ -1,0 +1,27 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "cross-env NODE_NO_WARNINGS=1 node --watch src/index.js",
+    "start": "cross-env NODE_NO_WARNINGS=1 node src/index.js",
+    "migrate": "cross-env NODE_NO_WARNINGS=1 node src/db/migrate.js",
+    "seed": "cross-env NODE_NO_WARNINGS=1 node src/db/seed.js",
+    "seed:demo": "cross-env NODE_NO_WARNINGS=1 node src/db/seedDemo.js",
+    "reset-password": "cross-env NODE_NO_WARNINGS=1 node src/db/resetPassword.js"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "multer": "^2.0.1",
+    "papaparse": "^5.5.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}
