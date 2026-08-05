@@ -3,6 +3,7 @@ import { LogIn, AlertTriangle, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Button, Field, Input } from '../components/ui/index.jsx';
+import { LogoMark } from '../components/Logo.jsx';
 
 export default function Login() {
   const { login } = useAuth();
@@ -31,7 +32,7 @@ export default function Login() {
         <div
           className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden"
           style={{
-            background: 'linear-gradient(155deg, #0d7d5c 0%, #0b6b4f 26%, #084f3b 62%, #062e23 100%)',
+            background: 'linear-gradient(155deg, #158e86 0%, #0f7a94 40%, #0b5f92 74%, #073f66 100%)',
           }}
         >
           {/* Soft light bloom, purely decorative */}
@@ -44,7 +45,7 @@ export default function Login() {
               borderRadius: '50%',
               top: -180,
               right: -220,
-              background: 'radial-gradient(circle, rgba(232,163,23,0.22) 0%, rgba(232,163,23,0) 68%)',
+              background: 'radial-gradient(circle, rgba(73,190,171,0.26) 0%, rgba(73,190,171,0) 68%)',
             }}
           />
           <div
@@ -56,32 +57,22 @@ export default function Login() {
               borderRadius: '50%',
               bottom: -200,
               left: -160,
-              background: 'radial-gradient(circle, rgba(43,196,138,0.20) 0%, rgba(43,196,138,0) 70%)',
+              background: 'radial-gradient(circle, rgba(14,119,177,0.30) 0%, rgba(14,119,177,0) 70%)',
             }}
           />
 
-          <div className="relative flex items-center gap-3">
+          <div className="relative">
+            <LogoMark size={150} color="#ffffff" title="OGDC" />
             <div
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 11,
-                background: 'rgba(255,255,255,0.14)',
-                border: '1px solid rgba(255,255,255,0.22)',
-                display: 'grid',
-                placeItems: 'center',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: 16,
+                color: 'rgba(255,255,255,0.84)',
+                fontSize: 19,
+                fontWeight: 500,
+                letterSpacing: '-0.01em',
+                marginTop: 12,
               }}
             >
-              OG
-            </div>
-            <div style={{ color: '#fff' }}>
-              <div style={{ fontSize: 16, fontWeight: 650, letterSpacing: '-0.01em' }}>
-                Oil &amp; Gas Development Company
-              </div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.66)' }}>Internee Management System</div>
+              the energy
             </div>
           </div>
 
@@ -113,12 +104,12 @@ export default function Login() {
 
           <div style={{ width: '100%', maxWidth: 368 }} className="animate-in">
             <div className="lg:hidden flex items-center gap-2.5 mb-7">
-              <div className="brand-mark" style={{ width: 36, height: 36 }}>
-                OG
+              <div className="brand-mark" style={{ width: 40, height: 40 }}>
+                <LogoMark size={26} color="#fff" title="OGDC" />
               </div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 650 }}>OGDC Internees</div>
-                <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>Management System</div>
+                <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>the energy</div>
               </div>
             </div>
 

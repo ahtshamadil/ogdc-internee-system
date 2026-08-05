@@ -8,6 +8,7 @@ import { useAuth, ROLE_LABELS } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { initials } from '../lib/format.js';
 import CommandPalette from './CommandPalette.jsx';
+import { LogoMark } from './Logo.jsx';
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -17,27 +18,36 @@ const NAV = [
   { to: '/admin', label: 'Administration', icon: Settings, roles: ['admin'] },
 ];
 
+/**
+ * Labels stay mounted and collapse via CSS rather than being conditionally
+ * rendered.
+ *
+ * Removing them from the DOM makes them vanish on the first frame while the
+ * sidebar width animates over the next 220ms -- the text pops out, then the
+ * panel catches up. Animating them out in step with the width is what makes the
+ * collapse read as one movement.
+ */
 function Sidebar({ collapsed, onToggle }) {
   const { user } = useAuth();
 
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <div className="brand-mark">OG</div>
-        {!collapsed && (
-          <div className="min-w-0">
-            <div style={{ fontSize: 14, fontWeight: 650, letterSpacing: '-0.01em' }} className="truncate-1">
-              OGDC Internees
-            </div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }} className="truncate-1">
-              Management System
-            </div>
+        <div className="brand-mark">
+          <LogoMark size={24} color="#fff" title="OGDC" />
+        </div>
+        <div className="nav-label min-w-0">
+          <div style={{ fontSize: 15, fontWeight: 650, letterSpacing: '-0.01em' }} className="truncate-1">
+            OGDC Internees
           </div>
-        )}
+          <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }} className="truncate-1">
+            the energy
+          </div>
+        </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto py-1">
-        {!collapsed && <div className="nav-section-label">Main</div>}
+        <div className="nav-section-label nav-label">Main</div>
         {NAV.filter((item) => !item.roles || item.roles.includes(user?.role)).map((item) => (
           <NavLink
             key={item.to}
@@ -45,10 +55,9 @@ function Sidebar({ collapsed, onToggle }) {
             end={item.end}
             className="nav-item"
             title={collapsed ? item.label : undefined}
-            style={collapsed ? { justifyContent: 'center', margin: '1px 8px' } : undefined}
           >
-            <item.icon size={17} strokeWidth={1.8} />
-            {!collapsed && item.label}
+            <item.icon size={18} strokeWidth={1.8} />
+            <span className="nav-label">{item.label}</span>
           </NavLink>
         ))}
       </nav>
@@ -58,11 +67,12 @@ function Sidebar({ collapsed, onToggle }) {
           type="button"
           onClick={onToggle}
           className="nav-item w-full"
-          style={{ margin: 0, ...(collapsed ? { justifyContent: 'center' } : {}) }}
+          style={{ margin: 0 }}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? <PanelLeft size={17} strokeWidth={1.8} /> : <PanelLeftClose size={17} strokeWidth={1.8} />}
-          {!collapsed && 'Collapse'}
+          {collapsed ? <PanelLeft size={18} strokeWidth={1.8} /> : <PanelLeftClose size={18} strokeWidth={1.8} />}
+          <span className="nav-label">Collapse</span>
         </button>
       </div>
     </aside>

@@ -35,7 +35,7 @@ export function TrendChart({ rows = [], height = 268, showCompleted = true }) {
           ]}
         />
       </div>
-      <ResponsiveContainer width="100%" height={height}>
+      <ResponsiveContainer debounce={180} width="100%" height={height}>
         <AreaChart data={rows} margin={{ top: 6, right: 18, left: 4, bottom: 4 }}>
           <defs>
             <linearGradient id="grad-joined" x1="0" y1="0" x2="0" y2="1">
@@ -106,7 +106,7 @@ export function BreakdownBar({ rows = [], height = 300, colorIndex = 0, maxRows 
   const axisWidth = Math.min(210, Math.max(84, longest * 6.9));
 
   return (
-    <ResponsiveContainer width="100%" height={Math.max(height, data.length * 30 + 26)}>
+    <ResponsiveContainer debounce={180} width="100%" height={Math.max(height, data.length * 30 + 26)}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 44, left: 4, bottom: 4 }}>
         <CartesianGrid {...gridProps(tokens)} horizontal={false} vertical />
         <XAxis type="number" {...axisProps(tokens)} allowDecimals={false} />
@@ -181,7 +181,7 @@ export function BreakdownDonut({ rows = [], height = 268, maxSlices = 6, remaind
   return (
     <div className="flex flex-col gap-2">
       <div style={{ position: 'relative' }}>
-        <ResponsiveContainer width="100%" height={height}>
+        <ResponsiveContainer debounce={180} width="100%" height={height}>
           <PieChart>
             <Pie
               data={data}
@@ -261,7 +261,7 @@ export function YoYChart({ rows = [], height = 262 }) {
   if (!rows.length) return <NoData height={height} />;
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer debounce={180} width="100%" height={height}>
       <BarChart data={rows} margin={{ top: 16, right: 12, left: 4, bottom: 4 }}>
         <CartesianGrid {...gridProps(tokens)} />
         <XAxis dataKey="label" {...axisProps(tokens)} />
@@ -293,7 +293,7 @@ export function Sparkline({ rows = [], color, height = 34 }) {
   const stroke = color || seriesColor(tokens, 0);
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer debounce={180} width="100%" height={height}>
       <AreaChart data={rows} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id={`spark-${stroke.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">

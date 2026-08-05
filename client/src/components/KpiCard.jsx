@@ -86,7 +86,13 @@ export function KpiCard({ label, value, caption, accent, icon: Icon, sparkline, 
       )}
       <div style={{ position: 'relative' }}>
         <div className="kpi-label">
-          {Icon && <Icon size={12} strokeWidth={2} style={{ color: accent || 'var(--text-muted)' }} />}
+          {Icon && (
+            /* colour set here so the chip's background can derive from it
+               via color-mix(currentColor) rather than needing a second token */
+            <span className="kpi-chip" style={{ color: accent || 'var(--text-muted)' }}>
+              <Icon size={14} strokeWidth={2} />
+            </span>
+          )}
           {label}
         </div>
         <div className="kpi-value">{num(animated)}</div>

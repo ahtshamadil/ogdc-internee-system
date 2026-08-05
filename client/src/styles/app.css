@@ -36,10 +36,19 @@
   display: grid;
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   min-height: 100vh;
-  transition: grid-template-columns 0.2s ease;
+  transition: grid-template-columns 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .app-shell[data-collapsed='true'] {
   grid-template-columns: var(--sidebar-width-collapsed) minmax(0, 1fr);
+}
+
+/* The sidebar's own layout never depends on the main column, so scope its
+   reflow and keep the animation off the content area's critical path. */
+.sidebar { contain: layout paint; }
+
+/* Someone who does not want motion gets the state change instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .app-shell { transition: none; }
 }
 
 .app-main {
@@ -89,20 +98,19 @@
   flex-shrink: 0;
 }
 
+/* Brand tile -- the OGDC mark on the identity's own teal→blue gradient. */
 .brand-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: linear-gradient(140deg, var(--primary) 0%, #0e8a63 62%, var(--accent) 155%);
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--brand-gradient);
   color: #fff;
   display: grid;
   place-items: center;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: -0.02em;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(11, 107, 79, 0.28);
+  box-shadow: var(--shadow-brand);
 }
+.brand-mark svg { display: block; }
 
 .nav-section-label {
   font-size: var(--fs-micro);
@@ -117,15 +125,69 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   margin: 1px 10px;
   border-radius: var(--radius);
   color: var(--text-secondary);
   font-size: var(--fs-base);
   font-weight: 500;
   white-space: nowrap;
-  transition: background 0.14s ease, color 0.14s ease;
+  overflow: hidden;
+  /* padding-left and gap are animated so the icon slides to centre rather than
+     jumping there; `justify-content` cannot be transitioned, so it is not used. */
+  transition: background 0.14s ease, color 0.14s ease,
+              padding-left 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              gap 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+}
+
+/* ---- collapsed state ------------------------------------------------- */
+
+/**
+ * Text collapses to zero width in step with the panel.
+ *
+ * max-width (not display/visibility) so it is animatable, and the label is
+ * faded slightly ahead of the width so it is gone before the panel is narrow
+ * enough to clip it mid-glyph.
+ */
+.nav-label {
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 180px;
+  opacity: 1;
+  transition: max-width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.14s ease 0.06s;
+}
+
+.app-shell[data-collapsed='true'] .nav-label {
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.1s ease;
+}
+
+.app-shell[data-collapsed='true'] .nav-item {
+  gap: 0;
+  /* (48px item - 18px icon) / 2 -- centres the icon in the collapsed rail. */
+  padding-left: 15px;
+}
+
+.app-shell[data-collapsed='true'] .nav-section-label {
+  /* Collapse the box entirely, padding included, so it cannot hold width open
+     inside the narrow rail. */
+  padding: 10px 0 0;
+  height: 0;
+}
+
+.app-shell[data-collapsed='true'] .sidebar-brand {
+  gap: 0;
+  padding: 0 18px;
+}
+
+.sidebar-brand { transition: gap 0.2s cubic-bezier(0.4, 0, 0.2, 1), padding 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item, .nav-label, .sidebar-brand { transition: none; }
 }
 .nav-item:hover {
   background: var(--surface-hover);
@@ -179,9 +241,12 @@
 
 .card {
   background: var(--surface);
+  /* Elevation carries the separation; the hairline is only there to hold an
+     edge where two cards meet or the shadow is invisible on dark. */
   border: 1px solid var(--hairline);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
 }
 
 .card-pad { padding: 18px 20px; }
@@ -243,7 +308,18 @@
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+/* Tinted chip behind each KPI icon, coloured from the metric's own accent. */
+.kpi-chip {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
 .kpi-value {
@@ -345,10 +421,11 @@
 .btn-primary {
   background: var(--primary);
   color: var(--primary-ink);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-brand);
+  font-weight: 600;
 }
 .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-.btn-primary:active:not(:disabled) { background: var(--primary-active); }
+.btn-primary:active:not(:disabled) { background: var(--primary-active); box-shadow: var(--shadow-sm); }
 
 .btn-secondary {
   background: var(--surface);
