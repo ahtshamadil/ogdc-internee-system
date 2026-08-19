@@ -6,6 +6,7 @@ import { asyncHandler, httpError } from '../middleware/error.js';
 import { listAllInterns } from '../services/internService.js';
 import { getBreakdown, getMatrix } from '../services/analyticsService.js';
 import { analyseCsv, commitImport, importTemplateCsv, IMPORT_COLUMNS } from '../services/importService.js';
+import { listReports, getReport, renderReport } from '../reports/registry.js';
 
 const router = express.Router();
 
@@ -113,6 +114,12 @@ router.get(
       'Share %': r.pct.toFixed(1),
     }));
 
+    audit(req, {
+      action: 'export',
+      entity: 'report',
+      details: { rows: data.length, format: 'csv', breakdown: breakdown.dimension },
+    });
+
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader(
       'Content-Disposition',
@@ -137,9 +144,82 @@ router.get(
       Total: matrix.grandTotal,
     });
 
+    audit(req, {
+      action: 'export',
+      entity: 'report',
+      details: { rows: matrix.rows.length, format: 'csv', crosstab: `${matrix.rowDimension} x ${matrix.colDimension}` },
+    });
+
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="OGDC-crosstab.csv"`);
     res.send(`﻿${Papa.unparse(data)}`);
+  }),
+);
+
+/* -------------------------- Official PDF reports ------------------------- */
+
+/**
+ * Per-record documents are issued rather than browsed -- a completion
+ * certificate is an official instrument and a profile sheet carries the
+ * internee's full CNIC and address on one page. Those are restricted to the
+ * roles that maintain the records; the collection reports stay available to
+ * everyone who can already see the internee list.
+ */
+const RECORD_DOCUMENT_ROLES = ['admin', 'hr'];
+
+function resolveReport(req) {
+  const definition = getReport(req.params.id);
+  if (!definition) throw httpError(404, `Unknown report: ${req.params.id}`);
+  if (definition.scope === 'record' && !RECORD_DOCUMENT_ROLES.includes(req.user.role)) {
+    throw httpError(403, 'You do not have permission to produce this document');
+  }
+  return definition;
+}
+
+router.get(
+  '/catalogue',
+  asyncHandler(async (req, res) => {
+    const reports = listReports().filter(
+      (r) => r.scope !== 'record' || RECORD_DOCUMENT_ROLES.includes(req.user.role),
+    );
+    res.json({ reports });
+  }),
+);
+
+/**
+ * The shaped dataset behind a report, before rendering.
+ *
+ * Exposed deliberately: it is the engine-independent half of the catalogue, so
+ * it is what any other reporting engine would consume, and it makes a report's
+ * figures checkable without reading a PDF.
+ */
+router.get(
+  '/data/:id',
+  asyncHandler(async (req, res) => {
+    const definition = resolveReport(req);
+    res.json({ report: definition.id, title: definition.title, data: definition.data(req.query) });
+  }),
+);
+
+router.get(
+  '/pdf/:id',
+  asyncHandler(async (req, res) => {
+    const definition = resolveReport(req);
+    const { buffer, filename, rows } = await renderReport(definition, req.query, req);
+
+    audit(req, {
+      action: 'export',
+      entity: 'report',
+      details: { report: definition.id, code: definition.code, format: 'pdf', rows },
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    // `inline` so the browser can preview it; the client adds a download
+    // attribute when the user asks for the file rather than a look at it.
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    res.setHeader('Content-Length', buffer.length);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.send(buffer);
   }),
 );
 

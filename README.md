@@ -22,7 +22,9 @@ it in a browser — nothing to install on their computers.
 - **Dashboard** — totals, this week / month / 3 months / 6 months / year against the
   previous period, joining trend, breakdowns by university, degree, department and
   city, year-on-year comparison, and a cross-tab of any dimension against any other.
-- **Reports** — filter, choose columns, export to CSV or print.
+- **Reports** — six official PDF reports on OGDC letterhead (register, management
+  summary, exception reports, profile sheet and completion certificate), plus the
+  ad-hoc builder: filter, choose columns, export to CSV or print.
 - **Import** — bring an existing spreadsheet in, with a full validation preview before
   anything is saved.
 - **Administration** — user accounts and roles, the reference lists the dashboard groups
@@ -139,6 +141,7 @@ A new password is printed once, and the user must change it at their next sign-i
 | | Administrator | HR / Data Entry | Viewer |
 |---|---|---|---|
 | Dashboard, internee list, reports | ✓ | ✓ | ✓ |
+| Profile sheets and completion certificates | ✓ | ✓ | |
 | View and download documents | ✓ | ✓ | ✓ |
 | Add / edit internees, upload documents | ✓ | ✓ | |
 | Import a spreadsheet | ✓ | ✓ | |
@@ -146,6 +149,47 @@ A new password is printed once, and the user must change it at their next sign-i
 | Backups, restore deleted records | ✓ | | |
 
 Permissions are enforced on the server, not just hidden in the interface.
+
+---
+
+## Reports
+
+**Reports → Official reports** produces formatted, paginated PDFs. Every one carries
+the OGDC letterhead, the criteria that produced it, "Page X of Y", and who generated
+it and when — so a printed page explains itself without the screen it came from.
+
+| Code | Report | What it is for |
+|---|---|---|
+| `OGDC/HR/INT-01` | Internee Master Register | The main register. Grouped with subtotals and a grand total; group by department, university, city, year and more |
+| `OGDC/HR/INT-04` | Departmental Intake Summary | Management view: department against joining year, a ranked distribution chart, and status composition |
+| `OGDC/HR/INT-05` | Certificate Pending Register | Completed internships with no certificate recorded, oldest first |
+| `OGDC/HR/INT-06` | Data Quality Exception Report | Eight checks for records that disagree with themselves or are missing mandatory information, each paired with the action that clears it |
+| `OGDC/HR/INT-02` | Internee Profile Sheet | One page per internee, with a mandatory-document checklist and signature block |
+| `OGDC/HR/INT-03` | Internship Completion Certificate | The formal certificate handed to the internee |
+
+The four collection reports use whatever is set on the filter bar, so a report covers
+the population you are already looking at. The two per-record documents are restricted
+to administrators and HR — a profile sheet carries the internee's full CNIC and address,
+and a certificate is an official instrument. Every report run is written to the
+activity log.
+
+A certificate can only be produced for an internee whose status is **Completed**.
+Asking for one otherwise returns a page saying so rather than a false record.
+
+### Adding a report
+
+Write one file in `server/src/reports/definitions/` exporting `data(query)` and
+`content(data)`, then add it to the list in `server/src/reports/registry.js`. The
+route, the on-screen catalogue and the audit trail pick it up with no further wiring.
+Keeping `data()` separate from `content()` is deliberate: it is the half that has no
+opinion about the renderer, so the same datasets would feed a different reporting
+engine unchanged.
+
+> **Note on characters.** Reports use the PDF standard fonts, so nothing has to be
+> embedded and no font file ships with the application. Those fonts can only encode
+> Latin-1; text is passed through `pdfSafe()`, which transliterates common typography
+> (curly quotes, dashes) and renders anything else as `?` rather than dropping it
+> silently. Printing a script outside Latin-1 would mean embedding a real font.
 
 ---
 
@@ -228,7 +272,8 @@ nssm start "OGDC Internee System"
 server/            Express API + SQLite
   src/db/          schema, migrations, seeds  (node:sqlite — no native modules)
   src/routes/      auth, interns, documents, analytics, lookups, users, reports, backups
-  src/services/    intern queries, analytics SQL, CSV import
+  src/services/    intern queries, analytics SQL, CSV import, report datasets
+  src/reports/     PDF reports — shared letterhead, registry, one file per report
 client/            React + Vite
   src/styles/      tokens.css — the single source of colour, type and spacing
   src/charts/      Recharts, themed from those tokens

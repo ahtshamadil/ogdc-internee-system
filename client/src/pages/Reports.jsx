@@ -8,6 +8,7 @@ import {
   Card, CardHeader, Button, PageHeader, Skeleton, EmptyState, Modal, Checkbox, Select, Avatar,
 } from '../components/ui/index.jsx';
 import FilterBar from '../components/FilterBar.jsx';
+import ReportCatalogue from '../components/ReportCatalogue.jsx';
 import { BreakdownBar } from '../charts/index.jsx';
 
 const DEFAULT_COLUMNS = [
@@ -62,7 +63,7 @@ export default function Reports() {
     <>
       <PageHeader
         title="Reports"
-        subtitle="Build a filtered list, then export it or print it as a handout."
+        subtitle="Produce an official PDF report, or build a filtered list and export it."
         actions={
           <>
             <Button icon={Columns3} onClick={() => setColumnsOpen(true)}>
@@ -88,6 +89,11 @@ export default function Reports() {
       />
 
       <FilterBar showSearch />
+
+      {/* ---- official PDF reports ----
+          Above the ad-hoc builder: these are the documents management asks for,
+          and they inherit whatever the filter bar above is set to. */}
+      <ReportCatalogue className="mb-3" />
 
       {/* ---- summary by dimension ---- */}
       <Card className="mb-3">
@@ -154,8 +160,12 @@ export default function Reports() {
       {/* ---- detail table ---- */}
       <Card>
         <CardHeader
-          title="Internee list"
-          subtitle={report.loading ? 'Loading…' : `${num(rows.length)} record${rows.length === 1 ? '' : 's'}`}
+          title="Ad-hoc internee list"
+          subtitle={
+            report.loading
+              ? 'Loading…'
+              : `${num(rows.length)} record${rows.length === 1 ? '' : 's'} — choose columns and export to CSV, or print this page`
+          }
         />
         {report.loading ? (
           <div className="card-pad">
